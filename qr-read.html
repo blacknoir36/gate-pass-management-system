@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Code Scanner</title>
+    <script src="https://unpkg.com/@zxing/library@0.20.0"></script>
+</head>
+<body>
+    <h1>QR Code Scanner</h1>
+    <div>
+        <video id="preview" style="width: 100%; max-width: 500px;"></video>
+    </div>
+    <div>
+        <h2>Scanned QR Code:</h2>
+        <div id="result" style="display: flex; flex-direction: column;">
+            <p><strong id="result-label"></strong></p>
+            <p id="result-text"></p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the code reader
+        const codeReader = new ZXing.BrowserQRCodeReader();
+
+        // Get the video element and result element
+        const videoElement = document.getElementById('preview');
+        const resultLabelElement = document.getElementById('result-label');
+        const resultTextElement = document.getElementById('result-text');
+
+        // Start the video stream when the window loads
+        window.onload = () => {
+            // Access the camera and start the video stream
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then((stream) => {
+                    videoElement.srcObject = stream;
+                    videoElement.play();
+                    scanQRCode(); // Start scanning for QR codes
+                })
+                .catch((error) => {
+                    console.error('Error accessing camera:', error);
+                });
+        };
+
+        // Function to scan for QR codes
+        function scanQRCode() {
+            codeReader.decodeFromVideoDevice(null, 'preview', (result, err) => {
+                if (result) {
+                    // QR code detected, display the result
+                    resultLabelElement.textContent = 'Scanned QR Code:';
+                    resultTextElement.textContent = result.text;
+                    // Send the scanned data to the PHP script using AJAX
+                    sendDataToServer(result.text);
+                }
+                if (err && !(err instanceof ZXing.NotFoundException)) {
+                    // An error occurred, log it to the console
+                    console.error('QR code scanning error:', err);
+                }
+            });
+        }
+
+        
+    </script>
+</body>
+</html>
